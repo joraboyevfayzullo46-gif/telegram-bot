@@ -130,3 +130,25 @@ bot.on('message', async (msg) => {
     }
 
 });
+bot.on('message', (msg) => {
+
+    const chatId = msg.chat.id;
+    const text = msg.text;
+
+    if (text === "🇺🇿 O'zbekcha") {
+        bot.sendMessage(chatId, "O'zbek tili tanlandi 🇺🇿");
+    }
+
+    if (text === "🇺🇿 Ўзбекча") {
+        bot.sendMessage(chatId, "Ўзбек тили танланди 🇺🇿");
+    }
+
+    if (text === "🇷🇺 Русский") {
+        bot.sendMessage(chatId, "Русский язык выбран 🇷🇺");
+    }
+
+    if (text === "🇺🇸 English") {
+        bot.sendMessage(chatId, "English selected 🇺🇸");
+    }
+
+});
