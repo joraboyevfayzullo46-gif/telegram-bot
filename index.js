@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
-// ===== EXPRESS (Render alive) =====
+// ===== Render alive server =====
 const app = express();
 app.get('/', (req, res) => res.send('Bot ishlayapti ✅'));
 app.listen(process.env.PORT || 3000);
@@ -10,7 +10,7 @@ app.listen(process.env.PORT || 3000);
 // ===== BOT =====
 const bot = new TelegramBot(process.env.TOKEN, { polling: true });
 
-// ===== TIMEOUT AXIOS =====
+// ===== AXIOS TIMEOUT FIX =====
 const request = axios.create({
     timeout: 15000
 });
@@ -37,15 +37,13 @@ Bot orqali quyidagilarni yuklab olishingiz mumkin:
 😎 Bot guruhlarda ham ishlay oladi!`,
 
 loading: "📥 Video yuklanmoqda, iltimos biroz kuting ⏳",
-error: "Server vaqtincha ishlamayapti, iltimos keyinroq urinib ko‘ring"
+error: "❌ Server vaqtincha ishlamayapti, iltimos keyinroq urinib ko‘ring"
 };
 }
 
 if (lang === "ru") {
 return {
 welcome: `🔥 Добро пожаловать в @joraboyevvc_bot!
-
-Вы можете скачать:
 
 • Instagram  
 • TikTok  
@@ -54,10 +52,10 @@ welcome: `🔥 Добро пожаловать в @joraboyevvc_bot!
 • Facebook  
 
 🚀 Отправьте ссылку!
-😎 Бот работает в группах!`,
+😎 Работает в группах!`,
 
 loading: "📥 Видео загружается, подождите ⏳",
-error: "Сервер временно недоступен"
+error: "❌ Сервер временно недоступен"
 };
 }
 
@@ -65,8 +63,8 @@ return {
 welcome: `🔥 Welcome!
 
 Send video link 📥`,
-loading: "📥 Loading video...",
-error: "Server error"
+loading: "📥 Loading...",
+error: "❌ Server error"
 };
 
 }
@@ -94,7 +92,7 @@ const textMsg = msg.text;
 
 if (!textMsg) return;
 
-// language select
+// language
 if (textMsg === "🇺🇿 O'zbekcha") {
     userLang[chatId] = "uz";
     return bot.sendMessage(chatId, text("uz").welcome);
@@ -110,30 +108,38 @@ if (textMsg === "🇺🇸 English") {
     return bot.sendMessage(chatId, text("en").welcome);
 }
 
-// ignore non-link
+// ignore non links
 if (!textMsg.startsWith("http")) return;
 
 const lang = userLang[chatId] || "en";
 
 bot.sendMessage(chatId, text(lang).loading);
 
-// start download
 handleDownload(chatId, textMsg, lang);
 
 });
 
-// ================= MULTI API SYSTEM =================
+// ================= MULTI API =================
 async function tryAPIs(apis) {
-    for (let api of apis) {
-        try {
-            const res = await request.get(api.url);
-            const data = api.get(res);
-            if (data) return data;
-        } catch (e) {
-            console.log("API fail:", api.url);
+
+for (let api of apis) {
+    try {
+        const res = await request.get(api.url);
+
+        const data = api.get(res);
+
+        // FIX: undefined check
+        if (data && data !== "undefined") {
+            return data;
         }
+
+    } catch (e) {
+        console.log("API fail:", api.url);
     }
-    return null;
+}
+
+return null;
+
 }
 
 // ================= DOWNLOAD ENGINE =================
@@ -182,10 +188,6 @@ video = await tryAPIs([
 {
 url: `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${url}`,
 get: (res) => res.data?.url
-},
-{
-url: `https://api.cobalt.tools/api/json?url=${url}`,
-get: (res) => res.data?.url
 }
 ]);
 
@@ -215,15 +217,21 @@ get: (res) => res.data?.data?.url
 
 }
 
-if (!video) {
-return bot.sendMessage(chatId, text(lang).error);
+// ===== FIX: VIDEO CHECK =====
+if (!video || video === "undefined" || video === null) {
+    return bot.sendMessage(chatId, text(lang).error);
 }
 
-return bot.sendVideo(chatId, video);
+// ===== SAFE SEND =====
+try {
+    return bot.sendVideo(chatId, video);
+} catch (e) {
+    return bot.sendMessage(chatId, text(lang).error);
+}
 
 } catch (err) {
 console.log(err);
 return bot.sendMessage(chatId, text(lang).error);
 }
 
-}
+    }
