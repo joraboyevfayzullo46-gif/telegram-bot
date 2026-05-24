@@ -6,10 +6,12 @@ const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
+
     bot.sendMessage(
         msg.chat.id,
-        'Link yuboring 📥\n\nInstagram / TikTok / YouTube / Facebook'
+        'Link yuboring 📥\n\nTikTok / Instagram / YouTube / Facebook / Snapchat'
     );
+
 });
 
 bot.on('message', async (msg) => {
@@ -17,23 +19,88 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    if (!text.startsWith('http')) return;
+    if (!text || !text.startsWith('http')) return;
 
     try {
 
         bot.sendMessage(chatId, 'Yuklanmoqda... ⏳');
 
-        const api = `https://api.siputzx.my.id/api/d/ytmp4?url=${text}`;
+        // TikTok
+        if (text.includes('tiktok.com')) {
 
-        const response = await axios.get(api);
+            const tt = await axios.get(
+                `https://tikwm.com/api/?url=${text}`
+            );
 
-        const video = response.data.data.dl;
+            const video = tt.data.data.play;
 
-        bot.sendVideo(chatId, video);
+            return bot.sendVideo(chatId, video);
 
-    } catch (err) {
+        }
 
-        console.log(err);
+        // Instagram
+        if (text.includes('instagram.com')) {
+
+            const ig = await axios.get(
+                `https://api.ryzendesu.vip/api/downloader/igdl?url=${text}`
+            );
+
+            const video = ig.data.data[0].url;
+
+            return bot.sendVideo(chatId, video);
+
+        }
+
+        // YouTube
+        if (
+            text.includes('youtube.com') ||
+            text.includes('youtu.be')
+        ) {
+
+            const yt = await axios.get(
+                `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${text}`
+            );
+
+            const video = yt.data.url;
+
+            return bot.sendVideo(chatId, video);
+
+        }
+
+        // Facebook
+        if (
+            text.includes('facebook.com') ||
+            text.includes('fb.watch')
+        ) {
+
+            const fb = await axios.get(
+                `https://api.ryzendesu.vip/api/downloader/fbdl?url=${text}`
+            );
+
+            const video = fb.data.data.hd;
+
+            return bot.sendVideo(chatId, video);
+
+        }
+
+        // Snapchat
+        if (text.includes('snapchat.com')) {
+
+            const sc = await axios.get(
+                `https://api.ryzendesu.vip/api/downloader/snack?url=${text}`
+            );
+
+            const video = sc.data.data.url;
+
+            return bot.sendVideo(chatId, video);
+
+        }
+
+        bot.sendMessage(chatId, 'Qo‘llab-quvvatlanmaydi ❌');
+
+    } catch (error) {
+
+        console.log(error);
 
         bot.sendMessage(chatId, 'Xatolik chiqdi ❌');
 
