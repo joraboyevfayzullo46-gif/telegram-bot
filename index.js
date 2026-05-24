@@ -1,3 +1,4 @@
+
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
@@ -6,6 +7,28 @@ const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
+
+    bot.sendMessage(
+        msg.chat.id,
+        `O'zingizga qulay tilni tanlang 🇺🇿
+
+Ўзингизга қулай тилни танланг 🇺🇿
+
+Выбери язык, который тебе нравится 🇷🇺
+
+Choose the language you like 🇺🇸`,
+        {
+            reply_markup: {
+                keyboard: [
+                    ["🇺🇿 O'zbekcha", "🇺🇿 Ўзбекча"],
+                    ["🇷🇺 Русский", "🇺🇸 English"]
+                ],
+                resize_keyboard: true
+            }
+        }
+    );
+
+});
 
     bot.sendMessage(
         msg.chat.id,
